@@ -13,6 +13,6 @@ module.exports = async function () {
     gitBranch: 'master',
     helpUrl: "https://github.com/holochain-gym/workshops",
     logoAlt: "A gym tool",
-    socialMediaImage: "/_assets/holochain-gym.png",
+    socialMediaImage: "/_assets/workshop.png",
   };
 };

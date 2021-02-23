@@ -5,7 +5,7 @@
   "scripts": {
     "start": "rocket start",
     "build": "rocket build",
-    "gh-pages": "npm run build && gh-pages -d _site -b gh-pages"
+    "gh-pages": "gh-pages -d _site -b gh-pages"
   },
   "repository": {
     "type": "git",
