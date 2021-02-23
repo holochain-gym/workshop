@@ -21,17 +21,11 @@ customElements.define("call-zome-fns", CallZomeFns);
 customElements.define("dht-cells", DhtCells);
 ```
 
-## Exercise
+## Use case
 
-### Problem statement
+In our small town, only a handful of people have the necessary resources for certain tasks. Things like tools, trucks or books are needed only in very specific times, and they aren't consumed when used. But, although everyone kind of knows each other, they don't want to give away their things to their neighbors without knowing where they will end up.
 
-We need to code a small zome that satisfies these capabilities:
-
-- Create a new post, passing a content and some tags
-- Get all posts that have been created
-- Get all the tags that have been created
-- Get all posts that have been created with a certain tag
-  - "get me all posts that have been posted with the tag "nature""
+So! We need to create a small [chain-of-custody](https://en.wikipedia.org/wiki/Chain_of_custody) application. With this, the owner of a resource will be able to lend someone a tool, knowing that whenever it changes hands, it will be logged in our app, and if at some point something is lost, we know who was the last person to hold it.
 
 We can follow this entry design to accomplish it:
 
@@ -86,9 +80,108 @@ const sampleZome1 = {
     },
   },
 };
+const custodyZome = {
+  name: "chain_of_custody",
+  entry_defs: [
+    {
+      id: "transfer",
+      visibility: "Public",
+    },
+  ],
+  zome_functions: {
+    transfer_resource: {
+      call: (hdk) => async ({
+        resource_hash,
+        last_transfer_hash,
+        transfer_to,
+      }) => {
+        const { agent_latest_pubkey } = await hdk.agent_info();
+
+        if (agent_latest_pubkey === transfer_to)
+          throw new Error("You cannot transfer a resource to yourself");
+
+        if (!last_transfer_hash) {
+          const element = await hdk.get(resource_hash);
+          if (!element) throw new Error("Could not find resource");
+          if (element.entry.content.owner !== agent_latest_pubkey)
+            throw new Error(
+              "You are not the owner of this resource, nor are holding it"
+            );
+
+          const elements2 = await hdk.query();
+
+          const previousTransfer = elements2.find((element) => {
+            if (element.signed_header.header.content.entry_hash) {
+              if (
+                element.entry &&
+                element.entry.content.resource_hash === resource_hash
+              )
+                return true;
+            }
+            return false;
+          });
+
+          if (previousTransfer)
+            throw new Error("You don't hold this resource anymore");
+        } else {
+          const element = await hdk.get(last_transfer_hash);
+          if (!element.entry.content.resource_hash)
+            throw new Error(
+              "Given last_transfer_hash does not correspond to a transfer"
+            );
+
+          if (element.entry.content.transfer_to !== agent_latest_pubkey)
+            throw new Error("You are not holding this resource");
+        }
+
+        const elements = await hdk.query();
+
+        const previousTransfer = elements.find((element) => {
+          if (element.signed_header.header.content.entry_hash) {
+            if (
+              element.entry &&
+              element.entry.content.last_transfer_hash &&
+              element.entry.content.last_transfer_hash === last_transfer_hash
+            )
+              return true;
+          }
+          return false;
+        });
+
+        if (previousTransfer)
+          throw new Error("You don't hold this resource anymore");
+
+        const content = {
+          resource_hash,
+          last_transfer_hash,
+          transfer_from: agent_latest_pubkey,
+          transfer_to,
+        };
+
+        if (!last_transfer_hash) {
+          await hdk.create_entry({
+            content,
+            entry_def_id: "transfer",
+          });
+        } else {
+          await hdk.update_entry({
+            original_header_address: last_transfer_hash,
+            content,
+            entry_def_id: "transfer",
+          });
+        }
+      },
+      arguments: [
+        { name: "resource_hash", type: "Hash" },
+        { name: "last_transfer_hash", type: "Option<Hash>" },
+        { name: "transfer_to", type: "AgentPubKey" },
+      ],
+    },
+  },
+};
 
 const simulatedDnaTemplate1 = {
-  zomes: [sampleZome1],
+  zomes: [sampleZome1, custodyZome],
 };
 export const Exercise = () => {
   return html`
@@ -113,11 +206,11 @@ export const Exercise = () => {
       <div style="display: flex; flex-direction: row">
         <call-zome-fns
           id="call-zome"
-          style="height: 300px; margin-bottom: 20px; margin-right: 20px;"
+          style="height: 400px; margin-bottom: 20px; margin-right: 20px;"
         >
         </call-zome-fns>
 
-        <entry-contents style="height: 300px; flex: 1; margin-bottom: 20px;">
+        <entry-contents style="height: 400px; flex: 1; margin-bottom: 20px;">
         </entry-contents>
       </div>
       <div style="display: flex; flex-direction: row">
@@ -127,6 +220,7 @@ export const Exercise = () => {
         </dht-cells>
         <entry-graph
           .showFilter=${false}
+          .showEntryContents=${false}
           style="height: 600px; width: 100%; margin-bottom: 20px;"
         ></entry-graph>
       </div>
