@@ -1,6 +1,7 @@
 ---
-title: Holochain Gym
+title: Holochain Dev Workshops
 layout: layout-home
-slogan: Let's train those holochain muscles!
-callToActionItems: [{ text: "Start your work out", href: "/workshop-1/requirements/setup/" }]
+slogan: Want to know what is it like to develop a holochain app?
+callToActionItems:
+  [{ text: "Start the workshop", href: "/workshop-1/requirements/setup/" }]
 ---
