@@ -1,1 +1,0 @@
-import"./9438c648.js";import"./466c6780.js";import"./962426a7.js";const e=document.querySelector("#sidebar"),o=document.querySelectorAll('[data-action="trigger-mobile-menu"]');for(const t of[...o])t.addEventListener("click",(function(){e.opened=!0}));
