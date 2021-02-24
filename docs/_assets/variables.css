@@ -46,6 +46,10 @@ html.dark {
   .content-area {
     max-width: 1900px !important;
   }
+
+  #sidebar {
+    min-width: 195px !important;
+  }
 }
 
 .page-logo {
@@ -55,4 +59,8 @@ html.dark {
 .logo-link img {
   width: 75px !important;
   height: 50px !important;
+}
+
+#main-header {
+  position: relative !important;
 }

@@ -3,10 +3,6 @@
     "name": "Holochain",
     "children": [
       {
-        "text": "Documentation",
-        "href": ""
-      },
-      {
         "text": "Forum",
         "href": "https://forum.holochain.org"
       }
