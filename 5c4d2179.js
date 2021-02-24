@@ -2967,7 +2967,7 @@ var Rx=function(){function e(e){return-e.tension*e.x-e.friction*e.v}function t(t
         >
         </call-zome-fns>
         <entry-contents
-          style="height: 420px; flex-basis: 4500px; margin-bottom: 20px;"
+          style="height: 420px; flex-basis: 450px; margin-bottom: 20px;"
         >
         </entry-contents>
       </div>
